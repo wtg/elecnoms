@@ -28,9 +28,11 @@ type officeInfo struct {
 }
 
 type nominationInfo struct {
-	RIN      int
-	Name     string
-	Initials string
+	RIN          int
+	Name         string
+	Initials     string
+	ID           int
+	CandidateRCS string
 }
 
 type Validator func(*nominationInfo, *CMSInfo, *officeInfo) Problems
@@ -156,7 +158,8 @@ func initialsValidator(nomination *nominationInfo, nominator *CMSInfo, office *o
 }
 
 // nameValidator assumes format "Firstname Lastname", which is super limited and does not
-// properly handle everyone's names.
+// properly handle everyone's names. This is not currently in use, as the site does not
+// collect names of nominators.
 func nameValidator(nomination *nominationInfo, nominator *CMSInfo, office *officeInfo) Problems {
 	problems := Problems{}
 
@@ -188,10 +191,40 @@ func nameValidator(nomination *nominationInfo, nominator *CMSInfo, office *offic
 	return problems
 }
 
+// uniqueValidator checks for any other nominations that have the same RIN. It returns problems if another
+// nomination has a lower ID than this one (and therefore it is not the only one).
+// Because it needs database access, this validator needs to be called differently from the others,
+// and it can return an error.
+func uniqueValidator(nomination *nominationInfo, nominator *CMSInfo, office *officeInfo) (Problems, error) {
+	problems := Problems{}
+
+	if nomination == nil {
+		return problems, nil
+	}
+
+	db, err := getDB()
+	if err != nil {
+		return problems, err
+	}
+	defer db.Close()
+
+	var count int
+	row := db.QueryRow("SELECT count(*) FROM nominations WHERE rcs_id = ? AND office_id = ? AND nomination_rin = ? AND nomination_id < ?", nomination.CandidateRCS, office.ID, nomination.RIN, nomination.ID)
+	err = row.Scan(&count)
+	if err != nil {
+		return problems, err
+	}
+
+	if count > 0 {
+		problems = append(problems, "Nominator has already nominated this candidate for this office.")
+	}
+
+	return problems, nil
+}
+
 // validate uses election-specific info validators to validate the provided information.
-// It returns a ValidNomination struct.
-func validate(nomination *nominationInfo, nominator *CMSInfo, office *officeInfo) ValidNomination {
-	problems := []Problem{}
+// It takes in existing Problems (may be empty), and it returns a ValidNomination struct.
+func validate(nomination *nominationInfo, nominator *CMSInfo, office *officeInfo, problems Problems) ValidNomination {
 	validators := []Validator{
 		studentValidator,
 		cohortValidator,
@@ -244,13 +277,17 @@ func validateNomination(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
 		return
 	}
+	nomID, err := strconv.ParseInt(r.FormValue("id"), 10, 64)
+	if err != nil {
+		log.Printf("unable to parse int: %s", err.Error())
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		return
+	}
 	nomination := nominationInfo{}
 	nomination.RIN = int(rin)
-	/*if nomination.RIN == "" {
-		http.Error(w, "missing RIN", http.StatusUnprocessableEntity)
-		return
-	}*/
+	nomination.ID = int(nomID)
 	nomination.Initials = r.FormValue("initials")
+	nomination.CandidateRCS = candidateRCS
 
 	// get office info
 	db, err := getDB()
@@ -278,6 +315,13 @@ func validateNomination(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	officeInfo := officeInfoFromType(officeType)
+	officeID, err := strconv.ParseInt(office, 10, 64)
+	if err != nil {
+		log.Printf("unable to parse int: %s", err.Error())
+		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
+		return
+	}
+	officeInfo.ID = int(officeID)
 
 	nominator, err := cmsInfoRIN(nomination.RIN)
 	if err == errInfoNotFound {
@@ -303,8 +347,15 @@ func validateNomination(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// special handling of uniqueValidator
+	uniqueProblems, err := uniqueValidator(&nomination, &nominator, &officeInfo)
+	if err != nil {
+		log.Printf("unable to get CMS info: %s", err.Error())
+		http.Error(w, "unable to get CMS info", http.StatusInternalServerError)
+		return
+	}
 	// validate the nomination
-	vn := validate(&nomination, &nominator, &officeInfo)
+	vn := validate(&nomination, &nominator, &officeInfo, uniqueProblems)
 	resp := validationResponse{
 		Validation: &vn,
 		Office:     &officeInfo,

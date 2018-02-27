@@ -128,7 +128,7 @@ func TestValidation(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual := validate(c.nomination, c.nominator, c.office)
+		actual := validate(c.nomination, c.nominator, c.office, Problems{})
 
 		if actual.Valid != c.expected.Valid || !actual.Problems.equal(c.expected.Problems) {
 			t.Errorf("expected %+v, got %+v", c.expected, actual)
