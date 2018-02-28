@@ -65,7 +65,7 @@ func getCandidateAssistants(rcs string) ([]string, error) {
 		if err != nil {
 			return assistants, err
 		}
-		assistants = append(assistants, assistant)
+		assistants = append(assistants, strings.ToLower(assistant))
 	}
 
 	return assistants, nil
@@ -85,7 +85,7 @@ func contains(slice []string, str string) bool {
 // Authorization is required, and people with permission are admins, the candidate with the specified RCS ID, and her assistants.
 func listNominations(w http.ResponseWriter, r *http.Request) {
 	// extract/validate RCS ID
-	rcs := r.FormValue("rcs")
+	rcs := strings.ToLower(r.FormValue("rcs"))
 	if rcs == "" {
 		log.Print("missing rcs")
 		http.Error(w, "missing rcs", http.StatusUnprocessableEntity)
@@ -185,7 +185,7 @@ func listNominations(w http.ResponseWriter, r *http.Request) {
 
 func addNominations(w http.ResponseWriter, r *http.Request) {
 	// extract/validate candidate RCS ID
-	rcs := r.FormValue("rcs")
+	rcs := strings.ToLower(r.FormValue("rcs"))
 	if rcs == "" {
 		log.Print("missing RCS")
 		http.Error(w, "missing RCS", http.StatusUnprocessableEntity)

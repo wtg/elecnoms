@@ -54,7 +54,7 @@ func contextFromCookie(ctx context.Context, cookie *http.Cookie) (context.Contex
 		return ctx, err
 	}
 
-	ctx = context.WithValue(ctx, casUserKey, sd.CASUser)
+	ctx = context.WithValue(ctx, casUserKey, strings.ToLower(sd.CASUser))
 	ctx = context.WithValue(ctx, adminKey, sd.Admin)
 	ctx = context.WithValue(ctx, authenticatedKey, sd.Authenticated)
 	return ctx, nil
