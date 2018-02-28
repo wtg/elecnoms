@@ -28,9 +28,9 @@ func nominationCounts(w http.ResponseWriter, r *http.Request) {
 	rcs := r.FormValue("rcs")
 	if rcs != "" {
 		// only return counts for this RCS ID
-		rows, err = db.Query("SELECT rcs_id, office_id, COUNT(*) as nominations FROM nominations WHERE rcs_id = ? GROUP BY rcs_id, office_id;", rcs)
+		rows, err = db.Query("SELECT rcs_id, office_id, COUNT(*) as nominations FROM nominations WHERE rcs_id = ? AND valid = true GROUP BY rcs_id, office_id;", rcs)
 	} else {
-		rows, err = db.Query("SELECT rcs_id, office_id, COUNT(*) as nominations FROM nominations GROUP BY rcs_id, office_id;")
+		rows, err = db.Query("SELECT rcs_id, office_id, COUNT(*) as nominations FROM nominations WHERE valid = true GROUP BY rcs_id, office_id;")
 	}
 	if err != nil {
 		log.Printf("unable to query database: %s", err.Error())
