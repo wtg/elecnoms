@@ -28,9 +28,9 @@ type officeInfo struct {
 }
 
 type nominationInfo struct {
-	RIN          int
+	PartialRIN   string // last three digits
 	Name         string
-	Initials     string
+	RcsID        string
 	ID           int
 	CandidateRCS string
 }
@@ -121,37 +121,20 @@ func greekIndependentValidator(nomination *nominationInfo, nominator *CMSInfo, o
 	return problems
 }
 
-func initialsValidator(nomination *nominationInfo, nominator *CMSInfo, office *officeInfo) Problems {
+func rinRCSMatchValidator(nomination *nominationInfo, nominator *CMSInfo, office *officeInfo) Problems {
 	problems := Problems{}
 
 	if nomination == nil || nominator == nil {
 		return problems
 	}
 
-	// length
-	if len(nomination.Initials) < 2 {
-		problems = append(problems, "Initials shorter than two characters.")
-	}
-	if len(nomination.Initials) > 3 {
-		problems = append(problems, "Initials longer than three characters.")
+	if len(nomination.PartialRIN) > 3 {
+		problems = append(problems, "Partial RIN value contains more than three digits.")
 	}
 
-	if len(nomination.Initials) == 2 {
-		initials := strings.ToLower(nomination.Initials)
-
-		// compare to CMS info
-		cmsInitials := strings.ToLower(string(nominator.FirstName[0]) + string(nominator.LastName[0]))
-		if initials[0] != cmsInitials[0] || initials[1] != cmsInitials[1] {
-			problems = append(problems, "Initials do not match Institute records.")
-		}
-	} else if len(nomination.Initials) == 3 {
-		initials := strings.ToLower(nomination.Initials)
-
-		// compare to CMS info
-		cmsInitials := strings.ToLower(string(nominator.FirstName[0]) + string(nominator.MiddleName[0]) + string(nominator.LastName[0]))
-		if initials[0] != cmsInitials[0] || initials[1] != cmsInitials[1] || initials[2] != cmsInitials[2] {
-			problems = append(problems, "Initials do not match Institute records.")
-		}
+	// rcs matches rin?
+	if nominator.RIN[len(nominator.RIN)-3:] != nomination.PartialRIN {
+		problems = append(problems, "Mismatched RIN digits.")
 	}
 
 	return problems
@@ -209,7 +192,7 @@ func uniqueValidator(nomination *nominationInfo, nominator *CMSInfo, office *off
 	defer db.Close()
 
 	var count int
-	row := db.QueryRow("SELECT count(*) FROM nominations WHERE rcs_id = ? AND office_id = ? AND nomination_rin = ? AND nomination_id < ?", nomination.CandidateRCS, office.ID, nomination.RIN, nomination.ID)
+	row := db.QueryRow("SELECT count(*) FROM nominations WHERE rcs_id = ? AND office_id = ? AND nomination_rin = ? AND nomination_id < ?", nomination.CandidateRCS, office.ID, nomination.PartialRIN, nomination.ID)
 	err = row.Scan(&count)
 	if err != nil {
 		return problems, err
@@ -229,7 +212,7 @@ func validate(nomination *nominationInfo, nominator *CMSInfo, office *officeInfo
 		studentValidator,
 		cohortValidator,
 		greekIndependentValidator,
-		initialsValidator,
+		rinRCSMatchValidator,
 	}
 
 	for _, validator := range validators {
@@ -271,22 +254,19 @@ func validateNomination(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// start filling out nomination info fields
-	rin, err := strconv.ParseInt(r.FormValue("rin"), 10, 64)
-	if err != nil {
-		log.Printf("unable to parse int: %s", err.Error())
-		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
-		return
-	}
+	rin := r.FormValue("rin")
+
 	nomID, err := strconv.ParseInt(r.FormValue("id"), 10, 64)
 	if err != nil {
 		log.Printf("unable to parse int: %s", err.Error())
 		http.Error(w, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
 		return
 	}
+
 	nomination := nominationInfo{}
-	nomination.RIN = int(rin)
+	nomination.PartialRIN = rin
 	nomination.ID = int(nomID)
-	nomination.Initials = r.FormValue("initials")
+	nomination.RcsID = r.FormValue("initials")
 	nomination.CandidateRCS = candidateRCS
 
 	// get office info
@@ -323,9 +303,9 @@ func validateNomination(w http.ResponseWriter, r *http.Request) {
 	}
 	officeInfo.ID = int(officeID)
 
-	nominator, err := cmsInfoRIN(nomination.RIN)
+	nominator, err := cmsInfoRCS(nomination.RcsID)
 	if err == errInfoNotFound {
-		vn := ValidNomination{Valid: false, Problems: Problems{"Invalid RIN."}}
+		vn := ValidNomination{Valid: false, Problems: Problems{"Invalid RCS."}}
 		resp := validationResponse{
 			Validation: &vn,
 			Office:     &officeInfo,
