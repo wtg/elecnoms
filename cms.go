@@ -28,6 +28,7 @@ type CMSInfo struct {
 	FirstName      string  `json:"first_name"`
 	MiddleName     string  `json:"middle_name"`
 	LastName       string  `json:"last_name"`
+	RIN            string  `json:"student_id"`
 }
 
 // we need to include output of class and credit cohort methods
@@ -90,7 +91,6 @@ func (c *CMSInfo) entryCohort() string {
 
 func getCMSInfo(url string) (CMSInfo, error) {
 	info := CMSInfo{}
-
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return info, err
@@ -104,6 +104,7 @@ func getCMSInfo(url string) (CMSInfo, error) {
 	if resp.StatusCode != http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
+			fmt.Println(err)
 			return info, err
 		}
 		e := errors.New(fmt.Sprintf("unexpected status code: %d, body: %s", resp.StatusCode, body))
