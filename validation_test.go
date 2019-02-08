@@ -262,7 +262,7 @@ func TestCohortValidator(t *testing.T) {
 	}
 }
 
-func TestrinRCSMatchValidator(t *testing.T) {
+func TestRinRCSMatchValidator(t *testing.T) {
 	type testCase struct {
 		expected   Problems
 		nomination *nominationInfo
@@ -278,8 +278,9 @@ func TestrinRCSMatchValidator(t *testing.T) {
 				RIN:       "661530777",
 			},
 			nomination: &nominationInfo{
-				Name:  "Joseph Lyon",
-				RcsID: "lyonj4",
+				Name:       "Joseph Lyon",
+				RcsID:      "lyonj4",
+				PartialRIN: "777",
 			},
 			office: nil,
 		},
