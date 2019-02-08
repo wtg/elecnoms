@@ -16,13 +16,12 @@ import (
 )
 
 type Nomination struct {
-	ID       int    `json:"id"`
-	RIN      string `json:"rin"`
-	RcsID    string `json:"rcs"`
-	Initials string `json:"initials"`
-	Valid    *bool  `json:"valid"`
-	Page     int    `json:"page"`
-	Number   int    `json:"number"`
+	ID     int    `json:"id"`
+	RIN    string `json:"rin"`
+	RcsID  string `json:"rcs"`
+	Valid  *bool  `json:"valid"`
+	Page   int    `json:"page"`
+	Number int    `json:"number"`
 }
 
 type NominationPage struct {
@@ -147,7 +146,7 @@ func listNominations(w http.ResponseWriter, r *http.Request) {
 		nomination := Nomination{}
 		var nomOfficeID int
 		var date time.Time
-		err = rows.Scan(&nomination.ID, &nomination.RIN, &nomination.Initials, &nomination.Valid, &nomination.Page, &nomOfficeID, &date, &nomination.Number)
+		err = rows.Scan(&nomination.ID, &nomination.RIN, &nomination.RcsID, &nomination.Valid, &nomination.Page, &nomOfficeID, &date, &nomination.Number)
 		if err != nil {
 			log.Printf("unable to scan: %s", err.Error())
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -314,7 +313,7 @@ func modifyNomination(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// update nomination in database
-	_, err = db.Exec("UPDATE nominations SET nomination_rin = ?, nomination_rcs_id = ?, page = ?, valid = ?, number = ? WHERE nomination_id = ?;", nomination.RIN, strings.ToUpper(nomination.Initials), nomination.Page, nomination.Valid, nomination.Number, nomination.ID)
+	_, err = db.Exec("UPDATE nominations SET nomination_rin = ?, nomination_rcs_id = ?, page = ?, valid = ?, number = ? WHERE nomination_id = ?;", nomination.RIN, strings.ToUpper(nomination.RcsID), nomination.Page, nomination.Valid, nomination.Number, nomination.ID)
 	if err != nil {
 		log.Printf("unable to query database: %s", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

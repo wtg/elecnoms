@@ -266,7 +266,7 @@ func validateNomination(w http.ResponseWriter, r *http.Request) {
 	nomination := nominationInfo{}
 	nomination.PartialRIN = rin
 	nomination.ID = int(nomID)
-	nomination.RcsID = r.FormValue("initials")
+	nomination.RcsID = r.FormValue("rcs")
 	nomination.CandidateRCS = candidateRCS
 
 	// get office info
