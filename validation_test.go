@@ -262,7 +262,7 @@ func TestCohortValidator(t *testing.T) {
 	}
 }
 
-func TestInitialsValidator(t *testing.T) {
+func TestrinRCSMatchValidator(t *testing.T) {
 	type testCase struct {
 		expected   Problems
 		nomination *nominationInfo
@@ -273,79 +273,80 @@ func TestInitialsValidator(t *testing.T) {
 		testCase{
 			expected: Problems{},
 			nominator: &CMSInfo{
-				FirstName: "Sidney",
-				LastName:  "Kochman",
-			},
-			nomination: &nominationInfo{
-				Name:     "Sidney Kochman",
-				Initials: "SK",
-			},
-			office: nil,
-		},
-		testCase{
-			expected: Problems{},
-			nominator: &CMSInfo{
-				FirstName:  "Sidney",
-				MiddleName: "David",
-				LastName:   "Kochman",
-			},
-			nomination: &nominationInfo{
-				Name:     "Sidney Kochman",
-				Initials: "SDK",
-			},
-			office: nil,
-		},
-		testCase{
-			expected: Problems{"Initials do not match Institute records."},
-			nominator: &CMSInfo{
 				FirstName: "Joseph",
 				LastName:  "Lyon",
+				RIN:       "661530777",
 			},
 			nomination: &nominationInfo{
-				Initials: "SK",
+				Name:  "Joseph Lyon",
+				RcsID: "lyonj4",
 			},
 			office: nil,
 		},
-		testCase{
-			expected: Problems{
-				"Initials do not match Institute records.",
-			},
-			nominator: &CMSInfo{
-				FirstName: "Sidney",
-				LastName:  "Kochman",
-			},
-			nomination: &nominationInfo{
-				Name:     "Joseph Lyon",
-				Initials: "EZ",
-			},
-			office: nil,
-		},
-		testCase{
-			expected: Problems{"Initials shorter than two characters."},
-			nominator: &CMSInfo{
-				FirstName: "Joseph",
-				LastName:  "Lyon",
-			},
-			nomination: &nominationInfo{
-				Initials: "S",
-			},
-			office: nil,
-		},
-		testCase{
-			expected: Problems{"Initials longer than three characters."},
-			nominator: &CMSInfo{
-				FirstName: "Joseph",
-				LastName:  "Lyon",
-			},
-			nomination: &nominationInfo{
-				Initials: "SDLK",
-			},
-			office: nil,
-		},
+		// testCase{
+		// 	expected: Problems{},
+		// 	nominator: &CMSInfo{
+		// 		FirstName:  "Sidney",
+		// 		MiddleName: "David",
+		// 		LastName:   "Kochman",
+		// 	},
+		// 	nomination: &nominationInfo{
+		// 		Name:     "Sidney Kochman",
+		// 		Initials: "SDK",
+		// 	},
+		// 	office: nil,
+		// },
+		// testCase{
+		// 	expected: Problems{"Initials do not match Institute records."},
+		// 	nominator: &CMSInfo{
+		// 		FirstName: "Joseph",
+		// 		LastName:  "Lyon",
+		// 	},
+		// 	nomination: &nominationInfo{
+		// 		Initials: "SK",
+		// 	},
+		// 	office: nil,
+		// },
+		// testCase{
+		// 	expected: Problems{
+		// 		"Initials do not match Institute records.",
+		// 	},
+		// 	nominator: &CMSInfo{
+		// 		FirstName: "Sidney",
+		// 		LastName:  "Kochman",
+		// 	},
+		// 	nomination: &nominationInfo{
+		// 		Name:     "Joseph Lyon",
+		// 		Initials: "EZ",
+		// 	},
+		// 	office: nil,
+		// },
+		// testCase{
+		// 	expected: Problems{"Initials shorter than two characters."},
+		// 	nominator: &CMSInfo{
+		// 		FirstName: "Joseph",
+		// 		LastName:  "Lyon",
+		// 	},
+		// 	nomination: &nominationInfo{
+		// 		Initials: "S",
+		// 	},
+		// 	office: nil,
+		// },
+		// testCase{
+		// 	expected: Problems{"Initials longer than three characters."},
+		// 	nominator: &CMSInfo{
+		// 		FirstName: "Joseph",
+		// 		LastName:  "Lyon",
+		// 	},
+		// 	nomination: &nominationInfo{
+		// 		Initials: "SDLK",
+		// 	},
+		// 	office: nil,
+		// },
 	}
 
 	for _, c := range cases {
-		actual := initialsValidator(c.nomination, c.nominator, c.office)
+		actual := rinRCSMatchValidator(c.nomination, c.nominator, c.office)
 		if !actual.equal(c.expected) {
 			t.Errorf("expected %+v, got %+v", c.expected, actual)
 		}

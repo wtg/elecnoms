@@ -17,7 +17,7 @@ import (
 
 type Nomination struct {
 	ID       int    `json:"id"`
-	RIN      int    `json:"rin"`
+	RIN      string `json:"rin"`
 	RcsID    string `json:"rcs"`
 	Initials string `json:"initials"`
 	Valid    *bool  `json:"valid"`
