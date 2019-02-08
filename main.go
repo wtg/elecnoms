@@ -263,6 +263,7 @@ func addNominations(w http.ResponseWriter, r *http.Request) {
 
 	// loop over provided nominations and insert
 	for _, nomination := range nominations {
+
 		_, err = tx.Exec("INSERT INTO nominations (rcs_id, office_id, nomination_rin, nomination_rcs_id, page, number, election_id) VALUES (?, ?, ?, ?, ?, ?, "+activeElectionQuery+");", rcs, office, nomination.RIN, strings.ToLower(nomination.RcsID), pageNum, nomination.Number)
 		if err != nil {
 			log.Printf("unable to query database: %s", err.Error())
@@ -322,7 +323,6 @@ func modifyNomination(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	fmt.Println("070" == "70")
 	r := chi.NewRouter()
 	r.Use(authenticate)
 	r.Get("/", listNominations)
