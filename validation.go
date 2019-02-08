@@ -131,7 +131,9 @@ func rinRCSMatchValidator(nomination *nominationInfo, nominator *CMSInfo, office
 	if len(nomination.PartialRIN) > 3 {
 		problems = append(problems, "Partial RIN value contains more than three digits.")
 	}
-
+	if len(nomination.PartialRIN) < 3 {
+		problems = append(problems, "Partial RIN value contains less than three digits.")
+	}
 	// rcs matches rin?
 	if nominator.RIN[len(nominator.RIN)-3:] != nomination.PartialRIN {
 		problems = append(problems, "Mismatched RIN digits.")

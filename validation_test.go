@@ -217,9 +217,9 @@ func TestCohortValidator(t *testing.T) {
 				GraduationDate: createCMSDate("2019-01-01"),
 			},
 			office: &officeInfo{
-				Type: "2020",
+				Type: "2021",
 				Cohorts: []string{
-					"2020",
+					"2021",
 				},
 			},
 			nomination: nil,
@@ -275,7 +275,7 @@ func TestRinRCSMatchValidator(t *testing.T) {
 			nominator: &CMSInfo{
 				FirstName: "Joseph",
 				LastName:  "Lyon",
-				RIN:       "661530777",
+				RIN:       "661520777",
 			},
 			nomination: &nominationInfo{
 				Name:       "Joseph Lyon",
@@ -284,66 +284,62 @@ func TestRinRCSMatchValidator(t *testing.T) {
 			},
 			office: nil,
 		},
-		// testCase{
-		// 	expected: Problems{},
-		// 	nominator: &CMSInfo{
-		// 		FirstName:  "Sidney",
-		// 		MiddleName: "David",
-		// 		LastName:   "Kochman",
-		// 	},
-		// 	nomination: &nominationInfo{
-		// 		Name:     "Sidney Kochman",
-		// 		Initials: "SDK",
-		// 	},
-		// 	office: nil,
-		// },
-		// testCase{
-		// 	expected: Problems{"Initials do not match Institute records."},
-		// 	nominator: &CMSInfo{
-		// 		FirstName: "Joseph",
-		// 		LastName:  "Lyon",
-		// 	},
-		// 	nomination: &nominationInfo{
-		// 		Initials: "SK",
-		// 	},
-		// 	office: nil,
-		// },
-		// testCase{
-		// 	expected: Problems{
-		// 		"Initials do not match Institute records.",
-		// 	},
-		// 	nominator: &CMSInfo{
-		// 		FirstName: "Sidney",
-		// 		LastName:  "Kochman",
-		// 	},
-		// 	nomination: &nominationInfo{
-		// 		Name:     "Joseph Lyon",
-		// 		Initials: "EZ",
-		// 	},
-		// 	office: nil,
-		// },
-		// testCase{
-		// 	expected: Problems{"Initials shorter than two characters."},
-		// 	nominator: &CMSInfo{
-		// 		FirstName: "Joseph",
-		// 		LastName:  "Lyon",
-		// 	},
-		// 	nomination: &nominationInfo{
-		// 		Initials: "S",
-		// 	},
-		// 	office: nil,
-		// },
-		// testCase{
-		// 	expected: Problems{"Initials longer than three characters."},
-		// 	nominator: &CMSInfo{
-		// 		FirstName: "Joseph",
-		// 		LastName:  "Lyon",
-		// 	},
-		// 	nomination: &nominationInfo{
-		// 		Initials: "SDLK",
-		// 	},
-		// 	office: nil,
-		// },
+		testCase{
+			expected: Problems{},
+			nominator: &CMSInfo{
+				FirstName:  "Sidney",
+				MiddleName: "David",
+				LastName:   "Kochman",
+				RIN:        "6615200999",
+			},
+			nomination: &nominationInfo{
+				Name:       "Sidney Kochman",
+				RcsID:      "kochms",
+				PartialRIN: "999",
+			},
+			office: nil,
+		},
+		testCase{
+			expected: Problems{"Mismatched RIN digits."},
+			nominator: &CMSInfo{
+				FirstName: "Joseph",
+				LastName:  "Lyon",
+				RIN:       "661300999",
+			},
+			nomination: &nominationInfo{
+				Name:       "Joseph Lyon",
+				PartialRIN: "998",
+			},
+			office: nil,
+		},
+		testCase{
+			expected: Problems{
+				"Partial RIN value contains more than three digits.", "Mismatched RIN digits.",
+			},
+			nominator: &CMSInfo{
+				FirstName: "Joseph",
+				LastName:  "Lyon",
+				RIN:       "661402089",
+			},
+			nomination: &nominationInfo{
+				Name:       "Joseph Lyon",
+				PartialRIN: "6949",
+			},
+			office: nil,
+		},
+		testCase{
+			expected: Problems{"Partial RIN value contains more than three digits.", "Mismatched RIN digits."},
+			nominator: &CMSInfo{
+				FirstName: "Joseph",
+				LastName:  "Lyon",
+				RIN:       "661402089",
+			},
+			nomination: &nominationInfo{
+				Name:       "Joseph Lyon",
+				PartialRIN: "2089",
+			},
+			office: nil,
+		},
 	}
 
 	for _, c := range cases {
@@ -365,10 +361,10 @@ func TestOfficeInfoFromType(t *testing.T) {
 				Type: "all",
 				Cohorts: []string{
 					"graduate",
-					"2018",
 					"2019",
 					"2020",
 					"2021",
+					"2022",
 				},
 			},
 			officeType: "all",
