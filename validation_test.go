@@ -125,6 +125,20 @@ func TestValidation(t *testing.T) {
 				},
 			},
 		},
+		testCase{
+			expected: ValidNomination{Valid: false, Problems: Problems{"Not a graduate student."}},
+			nominator: &CMSInfo{
+				Type:           "Student",
+				Greek:          true,
+				GraduationDate: createCMSDate("2018-01-01"),
+			},
+			office: &officeInfo{
+				Type: "graduate",
+				Cohorts: []string{
+					"graduate",
+				},
+			},
+		},
 	}
 
 	for _, c := range cases {
