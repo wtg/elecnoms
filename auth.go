@@ -16,8 +16,9 @@ import (
 // sessionData represents session data stored in the database
 type sessionData struct {
 	CASUser       string `json:"cas_user"`
-	Admin         bool   `json:"admin_rights"`
 	Authenticated bool   `json:"is_authenticated"`
+	ECMember      bool   `json:"ec_member"`
+	WTGMember     bool   `json:"wtg_member"`
 }
 
 // Key for context, set in authetnicate middleware. Go docs say,
@@ -54,8 +55,9 @@ func contextFromCookie(ctx context.Context, cookie *http.Cookie) (context.Contex
 		return ctx, err
 	}
 
+	admin := sd.ECMember || sd.WTGMember
 	ctx = context.WithValue(ctx, casUserKey, strings.ToLower(sd.CASUser))
-	ctx = context.WithValue(ctx, adminKey, sd.Admin)
+	ctx = context.WithValue(ctx, adminKey, admin)
 	ctx = context.WithValue(ctx, authenticatedKey, sd.Authenticated)
 	return ctx, nil
 }
