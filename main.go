@@ -313,7 +313,7 @@ func modifyNomination(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	// update nomination in database
-	_, err = db.Exec("UPDATE nominations SET nomination_partial_rin = ?, nomination_rcs_id = ?, page = ?, valid = ?, number = ? WHERE nomination_id = ?;", nomination.RIN, strings.ToUpper(nomination.RcsID), nomination.Page, nomination.Valid, nomination.Number, nomination.ID)
+	_, err = db.Exec("UPDATE nominations SET nomination_partial_rin = ?, nomination_rcs_id = ?, page = ?, valid = ?, number = ? WHERE nomination_id = ?;", nomination.RIN, nomination.RcsID, nomination.Page, nomination.Valid, nomination.Number, nomination.ID)
 	if err != nil {
 		log.Printf("unable to query database: %s", err.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
