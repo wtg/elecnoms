@@ -93,7 +93,7 @@ func cohortValidator(nomination *nominationInfo, nominator *CMSInfo, office *off
 	// class year
 	found := false
 	for _, cohort := range office.Cohorts {
-		if cohort == nominator.entryCohort() || cohort == nominator.creditCohort() || (nominator.Greek && cohort == "greek") || (!nominator.Greek && cohort == "independent") {
+		if cohort == nominator.entryCohort() || cohort == nominator.creditCohort() || (nominator.graduate() && cohort == "graduate") || (nominator.Greek && cohort == "greek") || (!nominator.Greek && cohort == "independent") {
 			found = true
 			break
 		}

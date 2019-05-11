@@ -41,6 +41,7 @@ func (c *CMSInfo) MarshalJSON() ([]byte, error) {
 		LastName     string `json:"last_name"`
 		CreditCohort string `json:"credit_cohort"`
 		EntryCohort  string `json:"entry_cohort"`
+		IsGraduate   bool `json:"is_graduate"`
 	}{
 		Type:         c.Type,
 		Greek:        c.Greek,
@@ -49,6 +50,7 @@ func (c *CMSInfo) MarshalJSON() ([]byte, error) {
 		LastName:     c.LastName,
 		CreditCohort: c.creditCohort(),
 		EntryCohort:  c.entryCohort(),
+		IsGraduate:   c.graduate(),
 	})
 }
 
