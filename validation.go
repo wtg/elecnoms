@@ -93,7 +93,7 @@ func cohortValidator(nomination *nominationInfo, nominator *CMSInfo, office *off
 	// class year
 	found := false
 	for _, cohort := range office.Cohorts {
-		if cohort == nominator.entryCohort() || cohort == nominator.creditCohort() || (nominator.Greek && cohort == "greek") || (!nominator.Greek && cohort == "independent") {
+		if cohort == nominator.entryCohort() || cohort == nominator.creditCohort() || (nominator.graduate() && cohort == "graduate") || (nominator.Greek && cohort == "greek") || (!nominator.Greek && cohort == "independent") {
 			found = true
 			break
 		}
@@ -194,7 +194,7 @@ func uniqueValidator(nomination *nominationInfo, nominator *CMSInfo, office *off
 	defer db.Close()
 
 	var count int
-	row := db.QueryRow("SELECT count(*) FROM nominations WHERE rcs_id = ? AND office_id = ? AND nomination_partial_rin = ? AND nomination_id < ?", nomination.CandidateRCS, office.ID, nomination.PartialRIN, nomination.ID)
+	row := db.QueryRow("SELECT count(*) FROM nominations WHERE rcs_id = ? AND office_id = ? AND nomination_rcs_id = ? AND nomination_id < ?", nomination.CandidateRCS, office.ID, nomination.RcsID, nomination.ID)
 	err = row.Scan(&count)
 	if err != nil {
 		return problems, err
